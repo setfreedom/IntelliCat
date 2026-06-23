@@ -172,6 +172,21 @@ def _call_external_api(catalog_items, duty_items):
     入参：目录项列表 [{name, fields, ...}], 职能列表 [{name, id, ...}]
     返回：{catalog_name: duty_name, ...}
     """
+    mode = current_app.config.get('MATCH_MODE', 'api')
+
+    # 本地模式：随机匹配（开发/演示用）
+    if mode == 'local':
+        result = {}
+        for c in catalog_items:
+            if duty_items:
+                import random
+                d = random.choice(duty_items)
+                result[c['name']] = d['name']
+            else:
+                result[c['name']] = ''
+        return result
+
+    # API 模式
     import requests
     from io import BytesIO
 

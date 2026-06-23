@@ -98,11 +98,12 @@ mulu=@目录文件.xlsx
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
+| `MATCH_MODE` | 匹配模式：`api`（调外部接口，失败即报错）或 `local`（本地随机，开发/演示用） | `api` |
 | `MATCH_API_URL` | 智能体接口地址 | 见上方 POST URL |
 | `MATCH_AUTH_TOKEN` | 授权密钥 | `f2fa523939374d8392c9eb50a6dcb245` |
 | `MATCH_SCENE_KEY` | 应用 ID | `ad441c290aef406fa9350344f513461c` |
 
-可通过 `.env` 或系统环境变量覆盖。
+可通过 `.env` 或系统环境变量覆盖。设 `MATCH_MODE=local` 可跳过外部接口，使用本地随机匹配。
 
 ### 响应格式
 
