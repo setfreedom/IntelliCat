@@ -3,7 +3,6 @@
 import json
 import os
 import io
-import re
 import uuid
 from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app, send_file
@@ -265,17 +264,7 @@ def _call_external_api(catalog_items, duty_items):
 
     except Exception as e:
         current_app.logger.error(f'API 调用失败：{str(e)}')
-
-    # 兜底：随机映射
-    result = {}
-    for c in catalog_items:
-        if duty_items:
-            import random
-            d = random.choice(duty_items)
-            result[c['name']] = d['name']
-        else:
-            result[c['name']] = ''
-    return result
+        raise RuntimeError(f'外部匹配接口调用失败：{str(e)}，请检查网络或接口配置')
 
 
 @duties_bp.route('/match', methods=['POST'])
