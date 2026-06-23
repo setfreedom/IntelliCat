@@ -6,3 +6,11 @@ __pycache__/
 *.db
 venv/
 .venv/
+
+# Flask runtime logs
+backend/flask_stdout.txt
+backend/flask_stderr.txt
+
+# Python cache
+.pytest_cache/
+*.egg-info/

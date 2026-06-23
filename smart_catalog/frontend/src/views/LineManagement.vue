@@ -3,31 +3,31 @@
     <!-- 操作栏 -->
     <el-card class="page-header">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 600; color: #303133; white-space: nowrap;">条线管理</span>
+        <span class="page-title">条线管理</span>
         <el-button type="primary" @click="showAddDialog" :icon="Plus">新增条线</el-button>
       </div>
     </el-card>
 
     <!-- 条线列表 -->
     <el-card class="page-table">
-      <el-table :data="lines" v-loading="loading" stripe style="width: 100%">
-        <el-table-column type="index" label="序号" width="70" />
-        <el-table-column prop="name" label="条线名称" width="220" />
-        <el-table-column label="目录部门映射数" width="200">
+      <el-table :data="lines" v-loading="loading" stripe border style="width: 100%">
+        <el-table-column type="index" label="序号" width="70" fixed />
+        <el-table-column prop="name" label="条线名称" min-width="200" />
+        <el-table-column label="目录部门映射数" min-width="160">
           <template #default="{ row }">
             <el-tag size="small" :type="row._catalog_count > 0 ? 'success' : 'info'">
               {{ row._catalog_count || 0 }} 个部门
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="职能部门映射数" width="200">
+        <el-table-column label="职能部门映射数" min-width="160">
           <template #default="{ row }">
             <el-tag size="small" :type="row._duty_count > 0 ? 'warning' : 'info'">
               {{ row._duty_count || 0 }} 个部门
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="320" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="showEditDialog(row)" :icon="Edit">编辑</el-button>
             <el-button size="small" @click="showMappings(row)" :icon="Setting">映射</el-button>
@@ -67,7 +67,7 @@
               </template>
             </el-table-column>
           </el-table>
-          <div v-if="catalogDepts.length === 0" style="text-align:center;color:#909399;padding:20px;">暂无映射</div>
+          <div v-if="catalogDepts.length === 0" class="empty-mapping">暂无映射</div>
         </el-tab-pane>
         <el-tab-pane label="职能部门映射（一对一）">
           <el-alert title="铁律一：每个职能部门只能映射到一个条线（唯一映射）" type="warning" :closable="false" show-icon style="margin-bottom:12px;" />
@@ -84,7 +84,7 @@
               </template>
             </el-table-column>
           </el-table>
-          <div v-if="dutyDepts.length === 0" style="text-align:center;color:#909399;padding:20px;">暂无映射</div>
+          <div v-if="dutyDepts.length === 0" class="empty-mapping">暂无映射</div>
         </el-tab-pane>
       </el-tabs>
     </el-dialog>
@@ -235,3 +235,11 @@ async function handleDeleteDutyDept(row) {
 
 onMounted(loadLines)
 </script>
+
+<style scoped>
+.empty-mapping {
+  text-align: center;
+  color: #909399;
+  padding: 20px;
+}
+</style>

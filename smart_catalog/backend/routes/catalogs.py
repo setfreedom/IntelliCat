@@ -7,6 +7,7 @@ from flask import Blueprint, request, jsonify, send_file
 import pandas as pd
 import openpyxl
 from models import db, Catalog, Line, LineCatalogDept
+from utils import bad_request, paginate, jsonify_paginated
 
 catalogs_bp = Blueprint('catalogs', __name__, url_prefix='/api/catalogs')
 
@@ -71,10 +72,10 @@ def _parse_upload(file_storage):
 def parse_upload():
     """上传并解析文件，返回预览数据（不保存到数据库）"""
     if 'file' not in request.files:
-        return jsonify({'error': '请上传文件'}), 400
+        return bad_request('请上传文件')
     file = request.files['file']
     if not file.filename:
-        return jsonify({'error': '文件名为空'}), 400
+        return bad_request('文件名为空')
 
     rows, err = _parse_upload(file)
     if err:
@@ -112,7 +113,7 @@ def save_catalogs():
     rows = data.get('rows', [])
 
     if not rows:
-        return jsonify({'error': '无数据可保存'}), 400
+        return bad_request('无数据可保存')
 
     invalid_rows = []
     for idx, row in enumerate(rows):
@@ -126,7 +127,7 @@ def save_catalogs():
                 invalid_rows.append(f'「{row.get("name", "")}」选择的条线不存在')
 
     if invalid_rows:
-        return jsonify({'error': '保存失败：' + '；'.join(invalid_rows)}), 400
+        return bad_request('保存失败：' + '；'.join(invalid_rows))
 
     # 清除旧数据后重新插入
     Catalog.query.delete()
@@ -147,9 +148,12 @@ def save_catalogs():
 
 @catalogs_bp.route('', methods=['GET'])
 def list_catalogs():
-    """获取已保存的目录列表"""
-    catalogs = Catalog.query.order_by(Catalog.sequence).all()
-    return jsonify([{
+    """获取已保存的目录列表（支持分页）"""
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 1000, type=int)
+    query = Catalog.query.order_by(Catalog.sequence)
+    items, total, page, per_page, total_pages = paginate(query, page, per_page, default_per_page=1000)
+    return jsonify_paginated([{
         'id': c.id,
         'sequence': c.sequence,
         'name': c.name,
@@ -157,14 +161,14 @@ def list_catalogs():
         'line_id': c.line_id,
         'line_name': c.line.name if c.line else None,
         'fields': json.loads(c.fields) if c.fields else []
-    } for c in catalogs])
+    } for c in items], total, page, per_page, total_pages)
 
 
 @catalogs_bp.route('/<int:catalog_id>', methods=['PUT'])
 def update_catalog(catalog_id):
     catalog = db.session.get(Catalog, catalog_id)
     if not catalog:
-        return jsonify({'error': '目录不存在'}), 404
+        return bad_request('目录不存在', 404)
     data = request.get_json(silent=True) or {}
     if 'name' in data:
         catalog.name = data['name'].strip()
@@ -173,7 +177,7 @@ def update_catalog(catalog_id):
     if 'line_id' in data:
         line_id = data['line_id']
         if line_id and not db.session.get(Line, line_id):
-            return jsonify({'error': '条线不存在'}), 400
+            return bad_request('条线不存在')
         catalog.line_id = line_id
     if 'fields' in data:
         catalog.fields = json.dumps(data['fields'], ensure_ascii=False)
@@ -185,7 +189,7 @@ def update_catalog(catalog_id):
 def delete_catalog(catalog_id):
     catalog = db.session.get(Catalog, catalog_id)
     if not catalog:
-        return jsonify({'error': '目录不存在'}), 404
+        return bad_request('目录不存在', 404)
     db.session.delete(catalog)
     db.session.commit()
     return jsonify({'message': '删除成功'})

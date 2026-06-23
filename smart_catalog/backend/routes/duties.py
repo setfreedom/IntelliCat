@@ -7,6 +7,7 @@ from flask import Blueprint, request, jsonify, current_app, send_file
 import pandas as pd
 import openpyxl
 from models import db, Duty, Line, LineDutyDept, Catalog, MatchResult
+from utils import bad_request, paginate, jsonify_paginated
 
 duties_bp = Blueprint('duties', __name__, url_prefix='/api/duties')
 
@@ -69,14 +70,14 @@ def _validate_duty_unique(department):
 def parse_upload():
     """上传解析职能清单 — 同时执行铁律一校验"""
     if 'file' not in request.files:
-        return jsonify({'error': '请上传文件'}), 400
+        return bad_request('请上传文件')
     file = request.files['file']
     if not file.filename:
-        return jsonify({'error': '文件名为空'}), 400
+        return bad_request('文件名为空')
 
     rows, err = _parse_duty_upload(file)
     if err:
-        return jsonify({'error': err}), 400
+        return bad_request(err)
 
     # 对每行部门做铁律一校验，同时查找映射条线
     violations = []
@@ -115,12 +116,12 @@ def save_duties():
     data = request.get_json(silent=True) or {}
     rows = data.get('rows', [])
     if not rows:
-        return jsonify({'error': '无数据可保存'}), 400
+        return bad_request('无数据可保存')
 
     # 检查是否还有未处理的违规
     violations = [r.get('_error') for r in rows if r.get('_valid') is False and r.get('_error')]
     if violations:
-        return jsonify({'error': '存在未处理的违规项：' + '；'.join(violations)}), 400
+        return bad_request('存在未处理的违规项：' + '；'.join(violations))
 
     Duty.query.delete()
     for row in rows:
@@ -137,22 +138,25 @@ def save_duties():
 
 @duties_bp.route('', methods=['GET'])
 def list_duties():
-    duties = Duty.query.order_by(Duty.department, Duty.inner_org).all()
-    return jsonify([{
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 1000, type=int)
+    query = Duty.query.order_by(Duty.department, Duty.inner_org)
+    items, total, page, per_page, total_pages = paginate(query, page, per_page, default_per_page=1000)
+    return jsonify_paginated([{
         'id': d.id,
         'department': d.department,
         'inner_org': d.inner_org,
         'duty_name': d.duty_name,
         'line_id': d.line_id,
         'line_name': d.line.name if d.line else None
-    } for d in duties])
+    } for d in items], total, page, per_page, total_pages)
 
 
 @duties_bp.route('/<int:duty_id>', methods=['DELETE'])
 def delete_duty(duty_id):
     duty = db.session.get(Duty, duty_id)
     if not duty:
-        return jsonify({'error': '职能不存在'}), 404
+        return bad_request('职能不存在', 404)
     db.session.delete(duty)
     db.session.commit()
     return jsonify({'message': '删除成功'})
@@ -210,7 +214,7 @@ def match_duties():
         duties = Duty.query.all()
 
     if not duties:
-        return jsonify({'error': '没有待匹配的职能数据'}), 400
+        return bad_request('没有待匹配的职能数据')
 
     # 铁律一：再次校验每个职责部门的映射唯一性
     dept_errors = {}

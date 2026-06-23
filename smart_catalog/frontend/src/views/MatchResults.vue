@@ -3,13 +3,13 @@
     <!-- 操作栏 -->
     <el-card class="page-header">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-        <span style="font-weight: 600; color: #303133; white-space: nowrap;">匹配结果</span>
+        <span class="page-title">匹配结果</span>
         <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
           <el-input
             v-model="searchQuery"
             placeholder="搜索部门/职能/目录/条线..."
             clearable
-            style="width: 260px;"
+            style="width: 300px;"
             @clear="handleSearch"
             @keyup.enter="handleSearch"
           >
@@ -52,26 +52,27 @@
       </el-table>
 
       <!-- 空状态 -->
-      <div v-if="results.length === 0 && !loading" style="text-align:center;padding:60px 0;color:#909399;">
-        <el-icon :size="48"><DataBoard /></el-icon>
-        <p style="margin-top:12px;">暂无匹配结果，请先在职能管理中执行智能匹配</p>
+      <div v-if="results.length === 0 && !loading" class="empty-state">
+        <el-icon class="empty-icon"><DataBoard /></el-icon>
+        <p class="empty-title">暂无匹配结果</p>
+        <p class="empty-hint">请在「职能管理」中上传职能清单并执行智能匹配</p>
       </div>
     </el-card>
 
     <!-- 统计信息 -->
     <el-card v-if="results.length > 0" class="page-table" style="margin-top: 16px;">
-      <div style="display: flex; gap: 32px; justify-content: center; padding: 8px 0;">
-        <div style="text-align: center;">
-          <div style="font-size: 32px; font-weight: 700; color: var(--el-color-primary);">{{ results.length }}</div>
-          <div style="color: #909399;">匹配结果总数</div>
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-number" style="color: var(--el-color-primary);">{{ results.length }}</div>
+          <div class="stat-label">匹配结果总数</div>
         </div>
-        <div style="text-align: center;">
-          <div style="font-size: 32px; font-weight: 700; color: var(--el-color-success);">{{ uniqueLines }}</div>
-          <div style="color: #909399;">涉及条线数</div>
+        <div class="stat-card">
+          <div class="stat-number" style="color: var(--el-color-success);">{{ uniqueLines }}</div>
+          <div class="stat-label">涉及条线数</div>
         </div>
-        <div style="text-align: center;">
-          <div style="font-size: 32px; font-weight: 700; color: var(--el-color-warning);">{{ uniqueDepts }}</div>
-          <div style="color: #909399;">涉及部门数</div>
+        <div class="stat-card">
+          <div class="stat-number" style="color: var(--el-color-warning);">{{ uniqueDepts }}</div>
+          <div class="stat-label">涉及部门数</div>
         </div>
       </div>
     </el-card>

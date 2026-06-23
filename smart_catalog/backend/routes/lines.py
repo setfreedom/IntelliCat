@@ -2,18 +2,22 @@
 
 from flask import Blueprint, request, jsonify
 from models import db, Line, LineCatalogDept, LineDutyDept
+from utils import bad_request, paginate, jsonify_paginated
 
 lines_bp = Blueprint('lines', __name__, url_prefix='/api/lines')
 
 
 @lines_bp.route('', methods=['GET'])
 def list_lines():
-    lines = Line.query.order_by(Line.name).all()
-    return jsonify([{
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 1000, type=int)
+    query = Line.query.order_by(Line.name)
+    items, total, page, per_page, total_pages = paginate(query, page, per_page, default_per_page=1000)
+    return jsonify_paginated([{
         'id': l.id,
         'name': l.name,
         'created_at': l.created_at.isoformat() if l.created_at else None
-    } for l in lines])
+    } for l in items], total, page, per_page, total_pages)
 
 
 @lines_bp.route('', methods=['POST'])
@@ -21,7 +25,7 @@ def create_line():
     data = request.get_json(silent=True) or {}
     name = data.get('name', '').strip()
     if not name:
-        return jsonify({'error': '条线名称不能为空'}), 400
+        return bad_request('条线名称不能为空')
     if Line.query.filter_by(name=name).first():
         return jsonify({'error': f'条线「{name}」已存在'}), 409
     line = Line(name=name)
@@ -34,11 +38,11 @@ def create_line():
 def update_line(line_id):
     line = db.session.get(Line, line_id)
     if not line:
-        return jsonify({'error': '条线不存在'}), 404
+        return bad_request('条线不存在', 404)
     data = request.get_json(silent=True) or {}
     name = data.get('name', '').strip()
     if not name:
-        return jsonify({'error': '条线名称不能为空'}), 400
+        return bad_request('条线名称不能为空')
     if Line.query.filter(Line.name == name, Line.id != line_id).first():
         return jsonify({'error': f'条线「{name}」已存在'}), 409
     line.name = name
@@ -62,7 +66,7 @@ def delete_line(line_id):
 def get_mappings(line_id):
     line = db.session.get(Line, line_id)
     if not line:
-        return jsonify({'error': '条线不存在'}), 404
+        return bad_request('条线不存在', 404)
     catalog_depts = [{'id': m.id, 'department': m.department}
                      for m in line.catalog_depts.all()]
     duty_depts = [{'id': m.id, 'department': m.department}
@@ -74,11 +78,11 @@ def get_mappings(line_id):
 def add_catalog_dept(line_id):
     line = db.session.get(Line, line_id)
     if not line:
-        return jsonify({'error': '条线不存在'}), 404
+        return bad_request('条线不存在', 404)
     data = request.get_json(silent=True) or {}
     dept = data.get('department', '').strip()
     if not dept:
-        return jsonify({'error': '部门名称不能为空'}), 400
+        return bad_request('部门名称不能为空')
     if LineCatalogDept.query.filter_by(department=dept).first():
         return jsonify({'error': f'目录部门「{dept}」已映射到其他条线'}), 409
     m = LineCatalogDept(line_id=line_id, department=dept)
@@ -101,11 +105,11 @@ def delete_catalog_dept(line_id, mapping_id):
 def add_duty_dept(line_id):
     line = db.session.get(Line, line_id)
     if not line:
-        return jsonify({'error': '条线不存在'}), 404
+        return bad_request('条线不存在', 404)
     data = request.get_json(silent=True) or {}
     dept = data.get('department', '').strip()
     if not dept:
-        return jsonify({'error': '部门名称不能为空'}), 400
+        return bad_request('部门名称不能为空')
     if LineDutyDept.query.filter_by(department=dept).first():
         return jsonify({'error': f'职能部门「{dept}」已映射到其他条线（铁律一：一对一唯一映射）'}), 409
     m = LineDutyDept(line_id=line_id, department=dept)

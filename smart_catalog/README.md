@@ -7,6 +7,8 @@ smart_catalog/
 ├── backend/           # Flask 后端 (Python)
 │   ├── app.py         # 入口
 │   ├── models.py      # 数据模型
+│   ├── utils.py       # 工具函数（分页、请求校验）
+│   ├── .env.example   # 环境变量模板
 │   └── routes/
 │       ├── catalogs.py   # 目录管理
 │       ├── duties.py     # 职能管理 + 匹配
@@ -14,7 +16,7 @@ smart_catalog/
 │       └── results.py    # 匹配结果
 └── frontend/          # Vue 3 前端
     ├── src/
-    │   ├── App.vue
+    │   ├── App.vue        # 布局 + 全局 CSS（字体系统、卡片、空状态）
     │   ├── views/
     │   │   ├── CatalogManagement.vue
     │   │   ├── DutyManagement.vue
@@ -46,6 +48,23 @@ npm run dev
 ```
 
 监听 http://localhost:3000，/api 请求自动代理到后端 5000 端口。
+
+## 工具函数（backend/utils.py）
+
+| 函数 | 用途 |
+|------|------|
+| `bad_request(msg, status)` | 统一错误响应 `(jsonify + status code)` |
+| `paginate(query, page, per_page)` | SQLAlchemy 查询分页，返回 `(items, total, page, per_page, total_pages)` |
+| `jsonify_paginated(items, total, ...)` | 数组响应 + 分页 headers（向前端兼容） |
+| `expect_body(*names)` | 装饰器：校验 JSON body 必填字段 |
+| `expect_file(name)` | 装饰器：校验上传文件必填 |
+
+所有 GET 列表接口支持 `?page=&per_page=` 分页查询参数，分页信息通过响应头返回：
+- `X-Total-Count` — 总记录数
+- `X-Page` — 当前页码
+- `X-Per-Page` — 每页条数
+- `X-Total-Pages` — 总页数
+
 
 ## 外部接口对接
 

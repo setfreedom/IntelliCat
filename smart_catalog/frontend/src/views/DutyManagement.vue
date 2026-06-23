@@ -2,8 +2,8 @@
   <div>
     <!-- 操作栏 -->
     <el-card class="page-header">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 600; color: #303133; white-space: nowrap;">职能管理</span>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <span class="page-title">职能管理</span>
         <div style="display: flex; gap: 8px; flex-shrink: 0;">
           <el-button :icon="Download" @click="downloadTemplate">下载模板</el-button>
           <el-upload
@@ -29,19 +29,20 @@
       type="error"
       :closable="false"
       show-icon
-      style="margin-bottom: 16px; border-radius: 8px;"
+
+      class="violation-alert"
     >
       <template #default>
-        <ul style="margin: 8px 0 0; padding-left: 20px;">
+        <ul class="violation-list">
           <li v-for="(v, i) in violations" :key="i">{{ v }}</li>
         </ul>
       </template>
     </el-alert>
 
     <!-- 上传预览表格 -->
-    <el-card v-if="previewRows.length > 0" class="page-table" style="margin-bottom: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <span style="font-weight: 600;">上传预览（共 {{ previewRows.length }} 条）</span>
+    <el-card v-if="previewRows.length > 0" class="page-table preview-card">
+      <div class="preview-header">
+        <span class="preview-title">上传预览（共 {{ previewRows.length }} 条）</span>
         <div>
           <el-button size="small" @click="previewRows = []">取消</el-button>
           <el-button size="small" type="primary" :disabled="hasViolations" @click="handleSavePreview" :loading="saving">保存数据</el-button>
@@ -72,8 +73,10 @@
 
     <!-- 已保存的职能列表（按部门分组） -->
     <el-card class="page-table">
-      <div style="margin-bottom: 12px; font-weight: 600; color: #606266;">
-        已保存职能数据（共 {{ savedDuties.length }} 条，{{ departmentGroups.length }} 个部门）
+      <div class="saved-header">
+        <span class="saved-title">已保存职能数据</span>
+        <el-tag size="small" type="info" effect="plain">{{ savedDuties.length }} 条</el-tag>
+        <el-tag size="small" type="primary" effect="plain">{{ departmentGroups.length }} 个部门</el-tag>
       </div>
       <el-table :data="departmentGroups" v-loading="loading" stripe border style="width: 100%" @selection-change="onDeptSelectionChange" row-key="department">
         <el-table-column type="selection" width="45" />
@@ -115,9 +118,10 @@
           </template>
         </el-table-column>
       </el-table>
-      <div v-if="savedDuties.length === 0 && previewRows.length === 0" style="text-align:center;padding:60px 0;color:#909399;">
-        <el-icon :size="48"><Document /></el-icon>
-        <p style="margin-top:12px;">暂无数据，请上传职能清单文件</p>
+      <div v-if="savedDuties.length === 0 && previewRows.length === 0" class="empty-state">
+        <el-icon class="empty-icon"><Document /></el-icon>
+        <p class="empty-title">暂无职能数据</p>
+        <p class="empty-hint">点击右上角「上传 Excel/CSV」开始导入职能清单</p>
       </div>
     </el-card>
 
@@ -392,3 +396,36 @@ function goToResults() {
 
 onMounted(loadSavedDuties)
 </script>
+
+<style scoped>
+.violation-alert {
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+.violation-list {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+.preview-card {
+  margin-bottom: 20px;
+}
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.preview-title {
+  font-weight: 600;
+}
+.saved-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.saved-title {
+  font-weight: 600;
+  color: #303133;
+}
+</style>

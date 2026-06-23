@@ -1,6 +1,6 @@
 <template>
   <el-container style="min-height: 100vh;">
-    <el-aside width="220px" class="app-sidebar">
+    <el-aside :width="sidebarWidth" class="app-sidebar">
       <div class="app-logo">
         <div class="app-logo-icon">
           <svg viewBox="0 0 28 28" width="26" height="26" fill="none">
@@ -53,20 +53,21 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const currentRoute = computed(() => route.path)
+const sidebarWidth = ref('var(--sidebar-width)')
 </script>
 
 <style>
 :root {
-  --el-font-size-base: 18px;
-  --el-font-size-small: 16px;
-  --el-font-size-large: 24px;
-  --el-font-size-extra-large: 28px;
-  --sidebar-width: 220px;
+  --el-font-size-base: 16px;
+  --el-font-size-small: 14px;
+  --el-font-size-large: 20px;
+  --el-font-size-extra-large: 24px;
+  --sidebar-width: 240px;
   --color-bg: #f0f4f8;
   --color-card-bg: #ffffff;
   --color-primary: #4F6EF7;
@@ -109,6 +110,7 @@ body {
   font-weight: 700;
   color: #e8e8f0;
   letter-spacing: 2px;
+  user-select: none;
 }
 .app-nav {
   flex: 1;
@@ -160,8 +162,12 @@ body {
 /* ===== Main area ===== */
 .app-main {
   background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf4 100%);
-  padding: 24px;
+  padding: 28px 32px;
   min-height: 100vh;
+}
+
+@media (max-width: 1200px) {
+  .app-main { padding: 20px 16px; }
 }
 
 /* ===== Card refinements ===== */
@@ -169,7 +175,7 @@ body {
   border: none;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
-  transition: all 0.25s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -182,19 +188,25 @@ body {
   height: 3px;
   background: linear-gradient(90deg, #4F6EF7, #7B8CFF);
   opacity: 0;
-  transition: opacity 0.25s;
+  transition: opacity 0.3s ease;
 }
-.app-main .el-card:hover::before {
+.app-main .el-card.page-header::before {
   opacity: 1;
 }
 .app-main .el-card:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
 }
 .app-main .el-card__body {
   padding: 20px 24px;
 }
 .app-main .page-header {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+}
+.app-main .page-table {
+  margin-top: 0;
+}
+.app-main .card-stack > .el-card + .el-card {
+  margin-top: 20px;
 }
 .app-main .page-header::before {
   opacity: 1;
@@ -225,9 +237,15 @@ body {
   background: #fafbfc;
 }
 .app-main .el-table__body tr {
-  transition: background 0.15s;
+  transition: background 0.2s ease;
 }
 .app-main .el-table__body tr:hover td {
+  background: #f0f4ff !important;
+}
+.app-main .el-table__body tr.el-table__row--striped:hover td {
+  background: #eef2fb !important;
+}
+.app-main .el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
   background: #f0f4ff !important;
 }
 .el-table .cell {
@@ -243,11 +261,40 @@ body {
   border-color: #ebeef5;
 }
 
+/* ===== Table column selection (DutyManagement) ===== */
+.el-table__body .el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+}
+
+/* ===== Tag refinements ===== */
+.app-main .el-tag {
+  border-radius: 6px;
+  padding: 0 10px;
+  font-weight: 500;
+  border: none;
+}
+.app-main .el-tag--plain {
+  border: 1px solid;
+}
+
+/* ===== Steps vertical ===== */
+.app-main .el-step.is-vertical .el-step__head {
+  width: 28px;
+  height: 28px;
+}
+.app-main .el-step.is-vertical .el-step__line {
+  left: 13px;
+}
+
 /* ===== Button refinements ===== */
 .app-main .el-button {
   border-radius: 8px;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.app-main .el-button:active {
+  transform: scale(0.97);
 }
 .app-main .el-button--primary {
   background: var(--color-primary);
@@ -264,12 +311,11 @@ body {
 .app-main .el-button--danger:hover {
   box-shadow: 0 4px 12px rgba(245, 108, 108, 0.3);
 }
-
-/* ===== Tag refinements ===== */
-.app-main .el-tag {
-  border-radius: 6px;
-  padding: 0 10px;
-  font-weight: 500;
+.app-main .el-button--primary.is-disabled {
+  box-shadow: none;
+}
+.app-main .el-button.is-link {
+  border-radius: 4px;
 }
 
 /* ===== Dialog refinements ===== */
@@ -311,9 +357,21 @@ body {
   border-radius: 10px;
 }
 
-/* ===== Steps refinements ===== */
+/* ===== Steps refinements (match dialog) ===== */
 .app-main .el-step.is-vertical .el-step__title {
-  font-size: var(--el-font-size-base);
+  font-size: 15px;
+  font-weight: 500;
+}
+.app-main .el-step.is-vertical .el-step__description {
+  font-size: 13px;
+  color: #a0a4b0;
+  padding-bottom: 8px;
+}
+.app-main .el-step.is-vertical.is-process .el-step__title {
+  color: var(--el-color-primary);
+}
+.app-main .el-step.is-vertical.is-finish .el-step__title {
+  font-weight: 500;
 }
 
 /* ===== Menu horizontal overrides for dialogs ===== */
@@ -337,4 +395,82 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #909399;
 }
+
+/* ===== Page title with accent bar ===== */
+.page-title {
+  font-size: var(--el-font-size-large);
+  font-weight: 700;
+  color: #1d1d2e;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.page-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 24px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #4F6EF7, #7B8CFF);
+  flex-shrink: 0;
+}
+
+/* ===== Empty state ===== */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px 60px;
+  transition: all 0.3s;
+}
+.empty-state .empty-icon {
+  font-size: 52px;
+  color: #d0d4e0;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.empty-state .empty-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #909399;
+  margin: 10px 0 4px;
+}
+.empty-state .empty-hint {
+  font-size: 14px;
+  color: #c0c4cc;
+  margin: 0;
+}
+
+/* ===== Stat cards ===== */
+.stat-cards {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  padding: 12px 0;
+}
+.stat-card {
+  text-align: center;
+  padding: 20px 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8f9fc 0%, #f0f2f8 100%);
+  min-width: 130px;
+  transition: all 0.3s;
+  border: 1px solid rgba(0,0,0,0.04);
+  flex: 1;
+  max-width: 220px;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.stat-card .stat-number {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.stat-card .stat-label {
+  font-size: 14px;
+  color: #909399;
+  margin-top: 6px;
+}
+
+
 </style>

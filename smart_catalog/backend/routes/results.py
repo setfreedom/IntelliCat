@@ -3,6 +3,7 @@
 import json
 from flask import Blueprint, request, jsonify
 from models import db, MatchResult
+from utils import bad_request, paginate, jsonify_paginated
 
 results_bp = Blueprint('results', __name__, url_prefix='/api/results')
 
@@ -10,6 +11,8 @@ results_bp = Blueprint('results', __name__, url_prefix='/api/results')
 @results_bp.route('', methods=['GET'])
 def list_results():
     search = request.args.get('search', '').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 1000, type=int)
     query = MatchResult.query.order_by(MatchResult.id)
 
     if search:
@@ -23,8 +26,8 @@ def list_results():
             )
         )
 
-    results = query.all()
-    return jsonify([{
+    items, total, page, per_page, total_pages = paginate(query, page, per_page, default_per_page=1000)
+    return jsonify_paginated([{
         'id': r.id,
         'catalog_id': r.catalog_id,
         'duty_id': r.duty_id,
@@ -34,14 +37,14 @@ def list_results():
         'line_name': r.line_name,
         'matched_data': json.loads(r.matched_data) if r.matched_data else {},
         'created_at': r.created_at.isoformat() if r.created_at else None
-    } for r in results])
+    } for r in items], total, page, per_page, total_pages)
 
 
 @results_bp.route('/<int:result_id>', methods=['PUT'])
 def update_result(result_id):
     result = db.session.get(MatchResult, result_id)
     if not result:
-        return jsonify({'error': '结果不存在'}), 404
+        return bad_request('结果不存在', 404)
     data = request.get_json(silent=True) or {}
     if 'catalog_name' in data:
         result.catalog_name = data['catalog_name'].strip()
@@ -57,7 +60,7 @@ def update_result(result_id):
 def delete_result(result_id):
     result = db.session.get(MatchResult, result_id)
     if not result:
-        return jsonify({'error': '结果不存在'}), 404
+        return bad_request('结果不存在', 404)
     db.session.delete(result)
     db.session.commit()
     return jsonify({'message': '删除成功'})

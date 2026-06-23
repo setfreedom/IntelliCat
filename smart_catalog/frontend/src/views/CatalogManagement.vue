@@ -3,7 +3,7 @@
     <!-- 操作栏 -->
     <el-card class="page-header">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 600; color: #303133; white-space: nowrap;">目录梳理</span>
+        <span class="page-title">目录梳理</span>
         <div style="display: flex; gap: 8px; flex-shrink: 0;">
           <el-button :icon="Download" @click="downloadTemplate">下载模板</el-button>
           <el-upload
@@ -85,9 +85,10 @@
       </el-table>
 
       <!-- 空状态 -->
-      <div v-if="rows.length === 0" style="text-align:center;padding:60px 0;color:#909399;">
-        <el-icon :size="48"><FolderOpened /></el-icon>
-        <p style="margin-top:12px;">暂无数据，请上传 Excel/CSV 文件</p>
+      <div v-if="rows.length === 0" class="empty-state">
+        <el-icon class="empty-icon"><FolderOpened /></el-icon>
+        <p class="empty-title">暂无目录数据</p>
+        <p class="empty-hint">点击右上角「上传 Excel/CSV」开始梳理目录</p>
       </div>
     </el-card>
 
