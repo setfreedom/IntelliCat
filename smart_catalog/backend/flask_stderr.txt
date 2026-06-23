@@ -1,0 +1,65 @@
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 172-313-471
+127.0.0.1 - - [23/Jun/2026 19:01:48] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:01:48] "POST /api/lines HTTP/1.1" 201 -
+127.0.0.1 - - [23/Jun/2026 19:01:48] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:01:48] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:04:55] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:04:55] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:05:11] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:05:11] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:05:16] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:05:16] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:05:21] "POST /api/lines HTTP/1.1" 201 -
+127.0.0.1 - - [23/Jun/2026 19:05:21] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:05:21] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:05:21] "GET /api/lines/2/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:06:17] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:06:17] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:06:17] "GET /api/lines/2/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:06:30] "DELETE /api/lines/1 HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:06:30] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:06:30] "GET /api/lines/2/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:06:46] "GET /api/lines/2/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:07:01] "DELETE /api/lines/2 HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:07:01] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:07:05] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:07:13] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:07:20] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:08:15] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:08:19] "POST /api/lines HTTP/1.1" 201 -
+127.0.0.1 - - [23/Jun/2026 19:08:19] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:08:19] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:08:21] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:08:28] "POST /api/lines/1/catalog-depts HTTP/1.1" 201 -
+127.0.0.1 - - [23/Jun/2026 19:08:40] "POST /api/lines/1/catalog-depts HTTP/1.1" 201 -
+127.0.0.1 - - [23/Jun/2026 19:08:51] "POST /api/lines/1/duty-depts HTTP/1.1" 201 -
+127.0.0.1 - - [23/Jun/2026 19:09:02] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:09:06] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:09:06] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:09:27] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:10:12] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:10:12] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:10:13] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:10:22] "POST /api/lines/1/catalog-depts HTTP/1.1" 201 -
+127.0.0.1 - - [23/Jun/2026 19:10:23] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:10:24] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:10:27] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:11:05] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:11:06] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:11:07] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:11:14] "POST /api/lines/1/catalog-depts HTTP/1.1" 201 -
+127.0.0.1 - - [23/Jun/2026 19:11:16] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:11:16] "GET /api/lines/1/mappings HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:11:20] "GET /api/results?search= HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:11:21] "GET /api/duties HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:11:21] "GET /api/lines HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:11:28] "GET /api/duties HTTP/1.1" 200 -
+127.0.0.1 - - [23/Jun/2026 19:11:30] "GET /api/lines HTTP/1.1" 200 -
+ * Detected change in 'D:\\python\\project\\IntelliCat\\smart_catalog\\backend\\routes\\catalogs.py', reloading
