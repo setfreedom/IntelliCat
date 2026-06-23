@@ -172,7 +172,7 @@ def _call_external_api(catalog_items, duty_items):
     入参：目录项列表 [{name, fields, ...}], 职能列表 [{name, id, ...}]
     返回：{catalog_name: duty_name, ...}
     """
-    mode = current_app.config.get('MATCH_MODE', 'api')
+    mode = os.getenv('MATCH_MODE', 'api')
 
     # 本地模式：随机匹配（开发/演示用）
     if mode == 'local':
@@ -190,11 +190,11 @@ def _call_external_api(catalog_items, duty_items):
     import requests
     from io import BytesIO
 
-    api_url = current_app.config.get('MATCH_API_URL',
+    api_url = os.getenv('MATCH_API_URL',
         'http://2.142.92.117:30486/scene_gateway/ad441c290aef406fa9350344f513461c')
-    auth_token = current_app.config.get('MATCH_AUTH_TOKEN',
+    auth_token = os.getenv('MATCH_AUTH_TOKEN',
         'f2fa523939374d8392c9eb50a6dcb245')
-    scene_key = current_app.config.get('MATCH_SCENE_KEY',
+    scene_key = os.getenv('MATCH_SCENE_KEY',
         'ad441c290aef406fa9350344f513461c')
 
     # 构建临时 xlsx：职能文件
