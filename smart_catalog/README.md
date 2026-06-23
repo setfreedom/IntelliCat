@@ -68,62 +68,59 @@ npm run dev
 
 ## 外部接口对接
 
-匹配功能的核心入口在 `backend/routes/duties.py` 的 `_call_external_api` 函数（约第 163 行）。
+匹配功能的核心入口在 `backend/routes/duties.py` 的 `_call_external_api` 函数（约第 167 行）。
 
-### 当前占位实现
+### 接口说明
 
-```python
-def _call_external_api(catalog_items, duty_items):
-    api_url = current_app.config.get('MATCH_API_URL', '')
-    if api_url:
-        # 有 MATCH_API_URL 时发 POST 请求
-        payload = {
-            'catalogs': [{'name': c['name'], 'fields': c.get('fields', [])} for c in catalog_items],
-            'duties': [{'name': d['name']} for d in duty_items]
-        }
-        resp = requests.post(api_url, json=payload, timeout=60)
-        return resp.json()
-    # 无配置时随机匹配（占位）
-    ...
+对接的是「职能匹配文件形式」智能体，采用 **多文件上传模式**：
+
+```
+POST http://2.142.92.117:30486/scene_gateway/ad441c290aef406fa9350344f513461c
+Content-Type: multipart/form-data
+AuthToken: f2fa523939374d8392c9eb50a6dcb245
+
+keyword=职能匹配
+requestId=20260623001
+sceneKey=ad441c290aef406fa9350344f513461c
+zhineng=@职能文件.xlsx
+mulu=@目录文件.xlsx
 ```
 
-### 入参说明
+### 实现逻辑
 
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `catalog_items` | `list[dict]` | 目录项列表，每项 `{name: str, fields: list[str]}` |
-| `duty_items` | `list[dict]` | 职能列表，每项 `{name: str, id: int}` |
-
-被调用前已按条线分组，每次调用是一个条线下的全部目录和职能。
-
-### 期望返回值
-
-```python
-# key=目录名称, value=匹配的职能名称
-{"目录A": "负责全市财政预算编制", "目录B": "负责全市税收征管"}
-```
-
-### 对接步骤
-
-拿到接口文档后，修改 `_call_external_api` 函数：
-
-1. **构造请求参数** — 根据接口文档调整 payload 的字段名和结构（`duties.py:174-176`）
-2. **调用接口** — 修改 URL、方法、超时等（`duties.py:178`）
-3. **解析响应** — 将接口返回数据映射为 `{目录名: 职能名}` 格式（`duties.py:179-180`）
+1. 从 `catalog_items` / `duty_items` 动态生成临时 xlsx（通过 openpyxl 写入 BytesIO）
+2. 用 `requests` 以 `multipart/form-data` 上传
+3. 解析返回的 `data` 数组，提取 `【数据目录名称】` 和 `【匹配内设机构】`
+4. 按内设机构名称匹配到本地 duty 记录
+5. 返回 `{目录名: 职能名}` 字典
 
 ### 环境变量
 
-| 变量 | 说明 |
-|------|------|
-| `MATCH_API_URL` | 外部匹配接口地址，设置后自动使用 |
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `MATCH_API_URL` | 智能体接口地址 | 见上方 POST URL |
+| `MATCH_AUTH_TOKEN` | 授权密钥 | `f2fa523939374d8392c9eb50a6dcb245` |
+| `MATCH_SCENE_KEY` | 应用 ID | `ad441c290aef406fa9350344f513461c` |
 
-可通过 `.env` 文件或系统环境变量设置。
+可通过 `.env` 或系统环境变量覆盖。
+
+### 响应格式
+
+每条数据格式为纯文本块，包含：
+```
+【数据目录名称】：目录名
+【匹配内设机构】：机构名
+【对应核心职能原文】：职能描述
+【匹配依据】：推理依据
+```
+
+对每个目录名，查找本地 duty 中 `inner_org` 匹配的记录，取 `duty_name` 存入匹配结果。
 
 ### 三条铁律
 
 | 规则 | 说明 | 位置 |
 |------|------|------|
 | 铁律一 | 职责-部门映射唯一性校验 | `duties.py:_validate_duty_unique` |
-| 铁律三 | 按条线分组，逐组匹配 | `duties.py:match_duties` 第 231 行起 |
+| 铁律三 | 按条线分组，逐组匹配 | `duties.py:match_duties` 第 235 行起 |
 
 > 铁律二（手动条线选择限制）已在用户要求下移除，当前 1 条映射时自动选择。

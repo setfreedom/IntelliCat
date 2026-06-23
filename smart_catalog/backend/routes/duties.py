@@ -3,6 +3,9 @@
 import json
 import os
 import io
+import re
+import uuid
+from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app, send_file
 import pandas as pd
 import openpyxl
@@ -166,26 +169,104 @@ def delete_duty(duty_id):
 
 def _call_external_api(catalog_items, duty_items):
     """
-    外部接口调用（占位实现）
-    入参：目录项列表 [{name, fields}], 职能名称列表 [duty_name]
+    调用职能匹配智能体（多文件上传模式）
+    入参：目录项列表 [{name, fields, ...}], 职能列表 [{name, id, ...}]
     返回：{catalog_name: duty_name, ...}
-    注意：实际使用时替换为真实 API 调用
     """
-    api_url = current_app.config.get('MATCH_API_URL', '')
-    if api_url:
-        try:
-            import requests
-            payload = {
-                'catalogs': [{'name': c['name'], 'fields': c.get('fields', [])} for c in catalog_items],
-                'duties': [{'name': d['name']} for d in duty_items]
-            }
-            resp = requests.post(api_url, json=payload, timeout=60)
-            if resp.status_code == 200:
-                return resp.json()
-        except Exception as e:
-            current_app.logger.error(f'API 调用失败：{str(e)}')
+    import requests
+    from io import BytesIO
 
-    # 占位逻辑：简单交叉映射
+    api_url = current_app.config.get('MATCH_API_URL',
+        'http://2.142.92.117:30486/scene_gateway/ad441c290aef406fa9350344f513461c')
+    auth_token = current_app.config.get('MATCH_AUTH_TOKEN',
+        'f2fa523939374d8392c9eb50a6dcb245')
+    scene_key = current_app.config.get('MATCH_SCENE_KEY',
+        'ad441c290aef406fa9350344f513461c')
+
+    # 构建临时 xlsx：职能文件
+    duty_io = BytesIO()
+    dwb = openpyxl.Workbook()
+    dws = dwb.active
+    dws.title = '职能'
+    dws.append(['部门名称', '内设机构', '职能名称'])
+    # 批量查询 duty 数据
+    duty_ids = [d['id'] for d in duty_items]
+    duty_records = {d.id: d for d in Duty.query.filter(Duty.id.in_(duty_ids)).all()}
+    for d_item in duty_items:
+        duty = duty_records.get(d_item['id'])
+        if duty:
+            dws.append([duty.department, duty.inner_org, duty.duty_name])
+    dwb.save(duty_io)
+    duty_io.seek(0)
+
+    # 构建临时 xlsx：目录文件
+    catalog_io = BytesIO()
+    cwb = openpyxl.Workbook()
+    cws = cwb.active
+    cws.title = '目录'
+    cws.append(['目录名称', '来源部门', '字段项'])
+    for c in catalog_items:
+        cws.append([c['name'], '', ', '.join(c.get('fields', []))])
+    cwb.save(catalog_io)
+    catalog_io.seek(0)
+
+    request_id = datetime.now().strftime('%Y%m%d%H%M%S') + uuid.uuid4().hex[:8]
+
+    files = {
+        'zhineng': ('zhineng.xlsx', duty_io,
+                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+        'mulu': ('mulu.xlsx', catalog_io,
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+    }
+    form_data = {
+        'keyword': '职能匹配',
+        'requestId': request_id,
+        'sceneKey': scene_key,
+        'dialogId': '',
+    }
+    headers = {'AuthToken': auth_token}
+
+    try:
+        resp = requests.post(api_url, headers=headers, data=form_data,
+                              files=files, timeout=120)
+        resp.raise_for_status()
+        body = resp.json()
+        raw_items = body.get('data', [])
+
+        matched = {}
+        for entry in raw_items:
+            catalog_name = ''
+            matched_org = ''
+            for line in entry.split('\n'):
+                line = line.strip()
+                if line.startswith('【数据目录名称】') and '】：' in line:
+                    catalog_name = line.split('】：', 1)[1].strip()
+                elif line.startswith('【匹配内设机构】') and '】：' in line:
+                    matched_org = line.split('】：', 1)[1].strip()
+                    if '、' in matched_org:
+                        matched_org = matched_org.split('、')[0].strip()
+
+            if catalog_name and matched_org:
+                # 按内设机构匹配 duty
+                found = None
+                other = None
+                for duty in duty_records.values():
+                    if duty.inner_org == matched_org or duty.department == matched_org:
+                        found = duty
+                        break
+                    if not other and (matched_org in duty.inner_org or matched_org in duty.department):
+                        other = duty
+                duty = found or other
+                matched[catalog_name] = duty.duty_name if duty else ''
+            elif catalog_name:
+                matched[catalog_name] = ''
+
+        return matched
+
+    except Exception as e:
+        current_app.logger.error(f'API 调用失败：{str(e)}')
+
+    # 兜底：随机映射
     result = {}
     for c in catalog_items:
         if duty_items:
